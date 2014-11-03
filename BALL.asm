@@ -1,0 +1,201 @@
+DRAW_BALL PROC
+
+	PUSH AX
+	PUSH BX
+	PUSH CX
+	PUSH DX
+	
+	; select pallete
+    MOV AH,0Bh
+	MOV BH,1
+	MOV BL,1
+	
+	INT 10h   
+	; writing pixel
+	
+	MOV AH,0Ch
+	MOV AL, 3
+	
+	SUB CX,3	
+	INT 10h
+	
+	DEC DX
+	INT 10H
+	
+	DEC DX
+	INC CX
+	INT 10H
+	
+	DEC DX
+	INC CX
+	INT 10H
+	
+	INC CX
+	INT 10H
+	
+	INC CX
+	INT 10H
+	
+	INC CX
+	INC DX
+	INT 10H
+	
+	INC CX
+	INC DX
+	INT 10H
+	
+	INC DX
+	INT 10H
+	
+	INC DX
+	INT 10H
+	
+	DEC CX
+	INC DX
+	INT 10H
+	
+	DEC CX
+	INC DX
+	INT 10H
+	
+	DEC CX
+	INT 10H
+	
+	DEC CX
+	INT 10H
+	
+	DEC CX
+	DEC DX
+	INT 10H
+	
+	DEC CX
+	DEC DX
+	INT 10H
+	
+	POP DX
+	POP CX
+	POP BX
+	POP AX
+	
+	RET	
+	
+DRAW_BALL ENDP
+
+
+ERASE_BALL PROC
+
+	PUSH AX
+	PUSH BX
+	PUSH CX
+	PUSH DX
+	
+	; select pallete
+    MOV AH,0Bh
+	MOV BH,1
+	MOV BL,1
+	
+	INT 10h   
+	; writing pixel
+	
+	MOV AH,0Ch
+	MOV AL, 0
+	
+	SUB CX,3	
+	INT 10h
+	
+	DEC DX
+	INT 10H
+	
+	DEC DX
+	INC CX
+	INT 10H
+	
+	DEC DX
+	INC CX
+	INT 10H
+	
+	INC CX
+	INT 10H
+	
+	INC CX
+	INT 10H
+	
+	INC CX
+	INC DX
+	INT 10H
+	
+	INC CX
+	INC DX
+	INT 10H
+	
+	INC DX
+	INT 10H
+	
+	INC DX
+	INT 10H
+	
+	DEC CX
+	INC DX
+	INT 10H
+	
+	DEC CX
+	INC DX
+	INT 10H
+	
+	DEC CX
+	INT 10H
+	
+	DEC CX
+	INT 10H
+	
+	DEC CX
+	DEC DX
+	INT 10H
+	
+	DEC CX
+	DEC DX
+	INT 10H
+	
+	POP DX
+	POP CX
+	POP BX
+	POP AX
+	
+	RET	
+	
+ERASE_BALL ENDP
+
+
+MOVE_BALL PROC
+	
+	PUSH AX
+	PUSH BX
+	PUSH CX
+	PUSH DX
+	
+	LPOUTER:
+		CALL DRAW_BALL
+		
+		PUSH AX
+		MOV AX, 10000
+		LP1:
+			DEC AX
+			CMP AX,0 
+			JNLE LP1
+		POP AX	
+		
+		CALL ERASE_BALL
+		INC CX
+		CMP CX, 240
+		JG DONE
+		JMP LPOUTER	
+	
+	
+DONE:
+	CALL DRAW_BALL
+	POP DX
+	POP CX
+	POP BX
+	POP AX
+	RET
+MOVE_BALL ENDP
