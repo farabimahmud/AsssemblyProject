@@ -4,8 +4,8 @@
 
 
 ;;;PUBLIC FUNCTIONS:;;
-PUBLIC SET_FIELD,SET_BOUNDARY,SET_GOALPOST,DRAW_BALL,ERASE_BALL,DRAW_AIM,ERASE_AIM
-
+PUBLIC SET_FIELD,SET_BOUNDARY,SET_GOALPOST,DRAW_BALL,ERASE_BALL,DRAW_AIM,ERASE_AIM,DRAW_KEEPER,ERASE_KEEPER
+PUBLIC COL_GK_L,COL_GK_R
 
 ;;;;;EXTERN FUNCTIONS;;;;;
 
@@ -13,6 +13,13 @@ PUBLIC SET_FIELD,SET_BOUNDARY,SET_GOALPOST,DRAW_BALL,ERASE_BALL,DRAW_AIM,ERASE_A
 ;;;code;;;;;
 
 .MODEL SMALL
+.DATA
+
+start dw ?
+finish dw ?
+reference dw ?
+COL_GK_L dw ?
+COL_GK_R dw ?
 
 ;;;;----------------------------------------------------------------------------------------------------;;;;
 ;;DRAW_ROW X,Y,Z draws a row in Xth row from Y th to Z th column;;
@@ -31,6 +38,23 @@ LOCAL L1
 	 INC CX
 	 CMP CX,Z
 	 JLE L1
+	 
+ENDM
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ERASE_ROW MACRO X,Y,Z
+LOCAL L11
+   
+   MOV CX,Y
+   MOV DX,X
+   MOV AH,0Ch
+   MOV AL,0 
+   
+   
+   L11:
+     INT 10h
+	 INC CX
+	 CMP CX,Z
+	 JLE L11
 	 
 ENDM
 
@@ -55,6 +79,30 @@ LOCAL L2
 	 INC DX
 	 CMP DX,Z
 	 JLE L2
+	 
+ENDM
+
+;;;;----------------------------------------------------------------------------------------------------;;;;
+
+
+;;;;----------------------------------------------------------------------------------------------------;;;;
+	 
+;;DRAW_COLUMN X,Y,Z draws a COLUMN in Xth column from Y th to Z th row;;
+
+ERASE_COLUMN MACRO X,Y,Z
+LOCAL L12
+   
+   MOV CX,X
+   MOV DX,Y
+   MOV AH,0Ch
+   MOV AL,0
+   
+   
+   L12:
+     INT 10h
+	 INC DX
+	 CMP DX,Z
+	 JLE L12
 	 
 ENDM
 
@@ -554,4 +602,121 @@ ERASE_AIM PROC NEAR
 ERASE_AIM ENDP
 ;;;---------------------------------------------------------------------------------------------------;;;;;
 
+
+;;;---------------------------------------------------------------------------------------------------;;;;;
+DRAW_KEEPER PROC NEAR
+;;;;;DRAW_KEEPER PROCEDURE draws a keeper
+;;;;input -KEEPER_CENTER_X,KEEPER_CENTER_Y
+;;;;OUTPUT -Drawn keeper
+
+PUSH AX
+PUSH BX
+PUSH CX
+PUSH DX
+
+;select pallete
+    MOV AH,0Bh
+	MOV BH,1
+	MOV BL,1
+	
+	INT 10h
+    
+	
+	;writing pixel
+	
+	MOV AH,0Ch
+	MOV AL,3
+	;
+	
+	
+DRAW_ROW 78,COL_GK_L,COL_GK_R
+DRAW_ROW 26 ,COL_GK_L,COL_GK_R
+DRAW_COLUMN COL_GK_L,26,78
+DRAW_COLUMN COL_GK_R,26,78
+
+;;waiting
+
+; PUSH AX
+		; MOV AX, 20000
+		; LP1:
+			; DEC AX
+			; CMP AX,0 
+			; JNLE LP1
+; POP AX	
+
+;DRAW_COLUMN 
+
+;DRAW_COLUMN 
+
+POP DX
+POP CX
+POP BX
+POP AX
+return1:
+RET
+DRAW_KEEPER ENDP 
+;;;---------------------------------------------------------------------------------------------------;;;;;
+
+
+;;;---------------------------------------------------------------------------------------------------;;;;;
+
+
+ERASE_KEEPER PROC NEAR
+;;;;;ERASE_KEEPER PROCEDURE erases a keeper
+;;;;input -KEEPER_CENTER_X,KEEPER_CENTER_Y
+;;;;OUTPUT -erased keeper
+
+PUSH AX
+PUSH BX
+PUSH CX
+PUSH DX
+
+;select pallete 
+    MOV AH,0Bh
+	MOV BH,1
+	MOV BL,1
+	
+	INT 10h
+    
+	
+	;writing pixel
+	
+	MOV AH,0Ch
+	MOV AL,0 
+	;
+	
+	
+ERASE_ROW 78,COL_GK_L,COL_GK_R
+ERASE_ROW 26 ,COL_GK_L,COL_GK_R
+ERASE_COLUMN COL_GK_L,26,78
+ERASE_COLUMN COL_GK_R,26,78
+
+
+;;waiting
+
+; PUSH AX
+		; MOV AX, 20000
+		; LP2:
+			; DEC AX
+			; CMP AX,0 
+			; JNLE LP2
+; POP AX	
+
+
+POP DX
+POP CX
+POP BX
+POP AX
+return2:
+RET
+
+
+ERASE_KEEPER ENDP
+
+
+;;;---------------------------------------------------------------------------------------------------;;;;;
+;;;---------------------------------------------------------------------------------------------------;;;;;
+
+
+ 
 END
