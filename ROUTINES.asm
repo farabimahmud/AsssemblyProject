@@ -3,13 +3,14 @@
 ;;::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 ;;;PUBLIC FUNCTIONS:;;
-PUBLIC MOVE_BALL,ANGLESHOT,ONE_SHOT,IMPACT_COL,IMPACT_ROW
+PUBLIC MOVE_BALL,ANGLESHOT,ONE_SHOT,IMPACT_COL,IMPACT_ROW,RANDOM,REFRESH
 
 
 ;;;;;EXTERN FUNCTIONS;;;;;
 EXTRN DRAW_BALL:NEAR,ERASE_BALL:NEAR,DRAW_AIM:NEAR,ERASE_AIM:NEAR,FIX_AIM:NEAR
 EXTRN FIXED_COL:WORD,FIXED_ROW:WORD
-EXTRN SET_BOUNDARY:NEAR,READ_KEY:NEAR,SET_FIELD:NEAR,SET_GOALPOST:NEAR
+EXTRN SET_BOUNDARY:NEAR,READ_KEY:NEAR,SET_FIELD:NEAR,SET_GOALPOST:NEAR,DRAW_KEEPER:NEAR,ERASE_KEEPER:NEAR 
+EXTRN COL_GK_L:WORD,COL_GK_R:WORD
 
 ;;;code;;;;;
 
@@ -98,24 +99,27 @@ MOVE_BALL PROC NEAR
 	PUSH BX
 	PUSH CX
 	PUSH DX
+         
     
-     
+    	
 	CMP AX,CX
 	JNE LPOUTER
 	CMP BX,DX
 	JE DONE
 	LPOUTER:
 		CALL DRAW_BALL
-		
+		CALL DRAW_KEEPER
 		PUSH AX
 		MOV AX, 20000
 		LP1:
+		   
 			DEC AX
 			CMP AX,0 
 			JNLE LP1
 		POP AX	
 		
 		CALL ERASE_BALL
+		
 		SUB CL,D_COLUMN
 		SUB DL,D_ROW
 		
@@ -127,11 +131,13 @@ MOVE_BALL PROC NEAR
 		 JE DONE
 		
 		labels:
-		JMP LPOUTER	
+	
+		 JMP LPOUTER	
 	
 	
 DONE:
     CALL DRAW_BALL
+	CALL DRAW_KEEPER
 	POP DX
 	POP CX
 	POP BX
@@ -150,11 +156,9 @@ ONE_SHOT PROC NEAR
 ;;INPUT NONE
 ;;OUTPUT IMPACT_COL,IMPACT_ROW==>Coord of last position of ball,edit as per needed
 
-	CALL SET_FIELD
- 	CALL SET_BOUNDARY
- 	CALL SET_GOALPOST
- 
- 	MOV CX,160
+	CALL SET_BOUNDARY
+	CALL SET_GOALPOST
+	MOV CX,160
 	MOV DX,160
 	CALL DRAW_BALL
  
@@ -162,24 +166,86 @@ ONE_SHOT PROC NEAR
 	MOV DX,50
 	CALL DRAW_AIM
 	CALL FIX_AIM
+	CALL ERASE_KEEPER
+	CALL RANDOM
+	
+	;check
 	
 	
+ 
 	MOV CX,160
 	MOV DX,160
  
 	CALL ANGLESHOT
+	CALL DRAW_KEEPER
+	
 	CALL MOVE_BALL
 	MOV AX,FIXED_COL
 	MOV BX,FIXED_ROW
  
-	 CALL ANGLESHOT
-	 CALL MOVE_BALL
+	CALL ANGLESHOT
+	CALL MOVE_BALL
     
 	
 	
 	CALL SET_BOUNDARY
-
-    	RET 	
+    RET 	
 
 ONE_SHOT ENDP
+
+;;;---------------------------------------------------------------------------------------------------;;;;;
+;;;---------------------------------------------------------------------------------------------------;;;;;
+
+
+RANDOM PROC NEAR
+;;;;RANDOM PROCEDURE generates random number in [93,207]             
+;;;input none
+;;;output: COL_GK_L,COL_GK_R
+;;;no restriction
+PUSH AX
+PUSH BX
+PUSH CX
+PUSH DX
+                 
+             
+mov ah,2ch
+int 21h 
+mov ah,0
+mov al,dh          ;ch=h cl=min dh=sec
+
+IMUL DH ;second*second
+
+MOV DH,115
+
+IDIV DH  
+
+MOV AL,AH
+XOR AH,AH
+
+ADD AL,93
+
+MOV COL_GK_L,AX
+ADD AX,20
+MOV COL_GK_R,AX
+
+
+POP DX
+POP CX
+POP BX
+POP AX             
+RET
+RANDOM ENDP
+;;;---------------------------------------------------------------------------------------------------;;;;;
+;;;---------------------------------------------------------------------------------------------------;;;;;
+
+REFRESH PROC NEAR
+;;REFRESH PROCEDURE vanishes the keeper and the ball;;
+;;input output none,no use problem
+CALL ERASE_KEEPER
+MOV CX,FIXED_COL
+MOV DX,FIXED_ROW
+CALL ERASE_BALL
+CALL ERASE_AIM
+RET
+REFRESH ENDP
 END  
